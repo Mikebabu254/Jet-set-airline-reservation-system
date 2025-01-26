@@ -7,9 +7,21 @@ const registerUser = async (req, res) => {
     const { firstName, lastName, phoneNo, gender, email, DOB, password, role } = req.body;
 
     try {
+        // Check if the email or phone number already exists
+        const existingUser = await userModel.findOne({
+            $or: [{ email: email }, { phoneNo: phoneNo }]
+        });
+
+        if (existingUser) {
+            return res.status(400).json({ 
+                message: 'Email or phone number is already registered.' 
+            });
+        }
+
         // Hash the password before saving to the database
         const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
 
+        // Create the user
         const UserModel = await userModel.create({ 
             firstName, 
             lastName, 
@@ -21,11 +33,11 @@ const registerUser = async (req, res) => {
             role: "user" 
         });
 
-        res.status(201).json(UserModel); 
-        console.log({ userModel: email }); 
+        res.status(201).json(UserModel);
+        console.log({ userModel: email });
     } catch (error) {
-        console.log("error", error); 
-        res.status(500).json({ message: 'Internal server error' }); 
+        console.log("error", error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 
