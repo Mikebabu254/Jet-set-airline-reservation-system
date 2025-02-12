@@ -18,19 +18,19 @@
         
         const handleSubmit = (e) => {
             e.preventDefault();
-
+        
             // Confirm passwords match
             if (password !== confirmPassword) {
                 setMessage("Passwords do not match!");
                 return;
             }
-
+        
             // Check if password length is at least 6 characters
             if (password.length < 6) {
                 setMessage("Password should be at least 6 characters long!");
                 return;
             }
-
+        
             axios.post('http://localhost:3000/registration', { 
                 firstName, 
                 lastName, 
@@ -41,15 +41,25 @@
                 password, 
                 role: status 
             })
-                .then(result => {
-                    setMessage(result.data); 
-                    setMessage("user has been registered successful");
-                })
-                .catch(err => {
-                    setMessage("An error occurred. Please try again.");
-                    console.log(err);
-                });
-        }
+            .then(result => {
+                setMessage("User has been registered successfully!");
+        
+                // Clear form fields
+                setFirstName("");
+                setLastName("");
+                setPhoneNo("");
+                setGender("");
+                setEmail("");
+                setDOB("");
+                setPassword("");
+                setConfirmPassword("");
+            })
+            .catch(err => {
+                setMessage("An error occurred. Please try again.");
+                console.log(err);
+            });
+        };
+        
 
         return (
             <div className="container d-flex justify-content-center align-items-center " style={{margin: '100px'}}>
