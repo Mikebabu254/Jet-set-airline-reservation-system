@@ -114,6 +114,7 @@
                                 id="DOB"
                                 required
                                 className="form-control"
+                                max={new Date().toISOString().split("T")[0]} // Sets max to today's date
                                 onChange={(e) => setDOB(e.target.value)}
                             />
                         </div>
