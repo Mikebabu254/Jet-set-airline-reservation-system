@@ -191,10 +191,12 @@ const AddFlight = () => {
                         className="form-control"
                         id="date"
                         value={date}
+                        min={new Date().toISOString().split("T")[0]} // Prevent past dates
                         onChange={(e) => setDate(e.target.value)}
                         required
                     />
                 </div>
+
                 <div className="form-group mb-4">
                     <label htmlFor="price">Price</label>
                     <input
