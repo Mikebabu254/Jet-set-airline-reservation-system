@@ -2,7 +2,7 @@ import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 
 function Footer() {
     return (
-        <footer className="bg-info text-light py-4">
+        <footer className="bg-info text-light py-4" id="footer">
             <div className="container">
                 <div className="row">
                     {/* Footer Title */}

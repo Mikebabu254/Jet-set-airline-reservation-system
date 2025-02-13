@@ -1,3 +1,20 @@
+:root {
+    --light-blue: #C7E7FE;
+    --light-turquoise: #D4F6FF;
+    --white: #FBFBFB;
+    --light-orange: #FFDDAF;
+    --grey: #726E6E;
+}
+
+#navbar{
+    background-color: var(--light-blue);
+    color: var(--grey);
+}
+
+#footer{
+    color: var(--grey);
+}
+
 .seat {
     width: 40px;
     height: 40px;
