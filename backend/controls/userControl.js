@@ -3,6 +3,8 @@ const userModel = require("../models/userModel")
 const bcrypt = require('bcrypt'); // Import bcrypt for password hashing
 const jwt = require('jsonwebtoken'); // Import JWT library
 
+
+// Register a new user
 const registerUser = async (req, res) => {
     const { firstName, lastName, phoneNo, gender, email, DOB, password, role } = req.body;
 
@@ -41,6 +43,8 @@ const registerUser = async (req, res) => {
     }
 };
 
+
+// Login a user
 const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
@@ -48,6 +52,11 @@ const loginUser = async (req, res) => {
         const user = await userModel.findOne({ email });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
+        }
+
+        // Check if the user is active
+        if (!user.isActive) {
+            return res.status(403).json({ message: "Your account has been deactivated. Contact support." });
         }
 
         // Compare the provided password with the hashed password in the database
@@ -74,6 +83,26 @@ const loginUser = async (req, res) => {
     } catch (error) {
         console.log("error", error);
         res.status(500).json({ message: 'Internal server error' });
+    }
+};
+
+
+// Toggle user activation
+const toggleUserStatus = async (req, res) => {
+    try {
+        const user = await userModel.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        // Toggle activation status
+        user.isActive = !user.isActive;
+        await user.save();
+
+        res.status(200).json({ message: `User ${user.isActive ? "activated" : "deactivated"}`, user });
+    } catch (error) {
+        console.error("Error toggling user status:", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
@@ -134,4 +163,4 @@ const countUsers = async(req, res)=>{
     }
 }
 
-module.exports = {registerUser, loginUser, allUser, countUsers, changePassword}
+module.exports = {registerUser, loginUser, allUser, countUsers, changePassword, toggleUserStatus}

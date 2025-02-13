@@ -1,4 +1,4 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const registrationSchema = new mongoose.Schema({
     firstName: String,
@@ -8,7 +8,8 @@ const registrationSchema = new mongoose.Schema({
     email: String,
     DOB: String,
     password: String,
-    role: String
-})
+    role: String,
+    isActive: { type: Boolean, default: true }  // New field for activation status
+});
 
-module.exports = mongoose.model("user", registrationSchema)
+module.exports = mongoose.model("user", registrationSchema);
