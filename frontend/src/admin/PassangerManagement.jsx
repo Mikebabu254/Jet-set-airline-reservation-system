@@ -44,24 +44,26 @@ const PassangerManagement = () => {
                 </thead>
                 <tbody>
                     {users.length > 0 ? (
-                        users.map((user) => (
-                            <tr key={user._id}>
-                                <td>{user.firstName}</td>
-                                <td>{user.lastName}</td>
-                                <td>{user.phoneNo}</td>
-                                <td>{user.gender}</td>
-                                <td>{user.email}</td>
-                                <td>{new Date(user.DOB).toLocaleDateString()}</td>
-                                <td className="text-center">
-                                    <button 
-                                        className={`btn ${user.isActive ? 'btn-danger' : 'btn-success'}`} 
-                                        onClick={() => toggleUserStatus(user._id)}
-                                    >
-                                        {user.isActive ? <FaEyeSlash /> : <FaEye />}
-                                    </button>
-                                </td>
-                            </tr>
-                        ))
+                        users
+                            .filter(user => user.role !== "admin")  // Exclude admins
+                            .map((user) => (
+                                <tr key={user._id}>
+                                    <td>{user.firstName}</td>
+                                    <td>{user.lastName}</td>
+                                    <td>{user.phoneNo}</td>
+                                    <td>{user.gender}</td>
+                                    <td>{user.email}</td>
+                                    <td>{new Date(user.DOB).toLocaleDateString()}</td>
+                                    <td className="text-center">
+                                        <button 
+                                            className={`btn ${user.isActive ? 'btn-danger' : 'btn-success'}`} 
+                                            onClick={() => toggleUserStatus(user._id)}
+                                        >
+                                            {user.isActive ? <FaEyeSlash /> : <FaEye />}
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))
                     ) : (
                         <tr>
                             <td colSpan="7" className="text-center">
@@ -70,6 +72,7 @@ const PassangerManagement = () => {
                         </tr>
                     )}
                 </tbody>
+
             </table>
         </div>
     );
