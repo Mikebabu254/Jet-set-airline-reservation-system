@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import UserNavBar from "../Components/UserNavBar";
 import Footer from "../Components/Footer";
-// import "./UserBookings.css";
 
 function UserBookings() {
     const [bookings, setBookings] = useState([]);
@@ -36,7 +35,8 @@ function UserBookings() {
                         seatNo: seat,
                         gate: "18",
                         time: booking.time,
-                        price: booking.price
+                        price: booking.price,
+                        receiptNumber: booking.receiptNumber, // ✅ Added receipt number
                     }))
                 );
                 setBookings(expandedBookings);
@@ -55,7 +55,7 @@ function UserBookings() {
 
     return (
         <div>
-            <UserNavBar/>
+            <UserNavBar />
             <div className="tickets-container">
                 {bookings.map((booking, index) => (
                     <div key={index} className="ticket">
@@ -73,17 +73,17 @@ function UserBookings() {
                             </div>
                         </div>
                         <div className="ticket-right">
+                            <p>Receipt No: <strong>{booking.receiptNumber || "N/A"}</strong></p> {/* ✅ Display receipt number */}
                             <p>Seat: <strong>{booking.seatNo}</strong></p>
                             <p>Time: <strong>{booking.time}</strong></p>
                             <p>Board Till: <strong>{booking.time}</strong></p>
-                            <p className="price">Price : <strong>{"ksh. " + booking.price + ".00"}</strong></p>
+                            <p className="price">Price: <strong>{"ksh. " + booking.price + ".00"}</strong></p>
                         </div>
                     </div>
                 ))}
             </div>
-            <Footer/>
+            <Footer />
         </div>
-        
     );
 }
 

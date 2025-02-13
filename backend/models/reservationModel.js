@@ -10,6 +10,7 @@ const bookingFlightsSchema = new mongoose.Schema({
     price: String,
     firstName: String,
     email: String,
+    receiptNumber: String,
 });
 
 module.exports = mongoose.model("BookingFlight", bookingFlightsSchema);

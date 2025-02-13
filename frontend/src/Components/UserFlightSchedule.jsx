@@ -92,39 +92,62 @@ const UserFlightSchedule = () => {
         );
     };
 
-    const confirmBooking = async () => {
-        if (selectedSeats.length === 0) {
-            alert("Please select at least one seat.");
-            return;
+
+// Function to generate a unique receipt number
+const generateReceiptNumber = () => {
+    const timestamp = Date.now().toString().slice(-6); // Last 6 digits of timestamp
+    const randomNum = Math.floor(1000 + Math.random() * 9000); // 4-digit random number
+    return `JET-${timestamp}-${randomNum}`; // Example: JET-456789-1234
+};
+
+const confirmBooking = async () => {
+    if (selectedSeats.length === 0) {
+        alert("Please select at least one seat.");
+        return;
+    }
+
+    try {
+        const receiptNumber = generateReceiptNumber();
+
+        const reservation = {
+            flightNumber: selectedFlight.flightNumber,
+            origin: selectedFlight.origin,
+            destination: selectedFlight.destination,
+            time: selectedFlight.time,
+            date: selectedFlight.date,
+            selectedSeats,
+            price: selectedFlight.price,
+            receiptNumber, // Attach receipt number
+        };
+
+        if (loggedInUser) {
+            reservation.firstName = loggedInUser.firstName;
+            reservation.email = loggedInUser.email;
         }
 
-        try {
-            const reservation = {
-                flightNumber: selectedFlight.flightNumber,
-                origin: selectedFlight.origin,
-                destination: selectedFlight.destination,
-                time: selectedFlight.time,
-                date: selectedFlight.date,
-                selectedSeats,
-                price: selectedFlight.price,
-            };
+        // Send the booking request with receipt number to the database
+        await axios.post("http://localhost:3000/booking-flight", reservation);
 
-            if (loggedInUser) {
-                reservation.firstName = loggedInUser.firstName;
-                reservation.email = loggedInUser.email;
-            }
+        // Update seat booking with receipt number
+        await axios.patch("http://localhost:3000/seat-book-flight", {
+            flightNumber: selectedFlight.flightNumber,
+            date: selectedFlight.date,
+            selectedSeats,
+            receiptNumber,
+        });
 
-            await axios.post("http://localhost:3000/booking-flight", reservation);
-            
-            await axios.patch("http://localhost:3000/seat-book-flight", reservation);
-            alert("Reservation successful!");
-            setSelectedFlight(null);
-            fetchFlights();
-        } catch (err) {
-            console.error("Error making reservation:", err);
-            alert("Failed to make reservation. Please try again.");
-        }
-    };
+        alert(`Reservation successful! Your receipt number: ${receiptNumber}`);
+
+        setSelectedFlight(null);
+        fetchFlights();
+    } catch (err) {
+        console.error("Error making reservation:", err);
+        alert("Failed to make reservation. Please try again.");
+    }
+};
+
+
+
 
     const renderSeatGrid = (flight) => {
         const totalSeats = flight.noOfSeats || 0;

@@ -25,7 +25,7 @@ const addFlight = async (req, res) => {
 };
 
 const bookFlight = async (req, res) => {
-  const { flightNumber, origin, destination, time, date, selectedSeats, price, firstName, email } = req.body;
+  const { flightNumber, origin, destination, time, date, selectedSeats, price, firstName, email, receiptNumber} = req.body;
   try {
       // Fetch the flight bookings to check for already booked seats
       const existingBookings = await bookingFlights.find({ 
@@ -53,6 +53,7 @@ const bookFlight = async (req, res) => {
           price,
           firstName,
           email,
+          receiptNumber,
       });
 
       res.status(201).json(newFlight);
