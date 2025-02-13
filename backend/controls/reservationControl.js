@@ -1,7 +1,7 @@
 const bookingFlights = require("../models/reservationModel")
 
 const bookFlight = async (req, res)=>{
-    const { from, to, departureDate, returnDate, price, payed, receiptNumber } = req.body;
+    const { from, to, departureDate, returnDate, price, payed } = req.body;
 
     try {
         const newFlight = await bookingFlights.create({
@@ -11,7 +11,6 @@ const bookFlight = async (req, res)=>{
             returnDate,
             price,
             payed,
-            receiptNumber,
         });
     
         res.status(201).json(newFlight); 
