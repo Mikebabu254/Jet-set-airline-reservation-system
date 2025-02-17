@@ -10,6 +10,7 @@ const Dashboard = () => {
   const [bookingCount, setBookingCount] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [viewBooking, setViewBooking] = useState([]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -26,6 +27,9 @@ const Dashboard = () => {
 
         const bookingsRes = await axios.get("http://localhost:3000/count-booking");
         setBookingCount(bookingsRes.data.noOfBooking);
+
+        const veiewBookingRes = await axios.get("http://localhost:3000/view-bookings");
+        setViewBooking(veiewBookingRes.data);
 
       } catch (err) {
         console.error("Error fetching stats:", err);
@@ -92,91 +96,36 @@ const Dashboard = () => {
           </Card>
         </Col>
       </Row>
-
-      {/* Progress Section */}
-      <Row className="mb-4">
-        <Col md={6}>
-          <Card className="shadow-sm border-0">
-            <Card.Body>
-              <h5>Booking Progress</h5>
-              <p className="text-muted">Daily booking target completion</p>
-              <ProgressBar now={75} label="75%" variant="primary" />
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={6}>
-          <Card className="shadow-sm border-0">
-            <Card.Body>
-              <h5>Revenue Progress</h5>
-              <p className="text-muted">Monthly revenue target</p>
-              <ProgressBar now={50} label="50%" variant="success" />
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Recent Activities */}
-      <Row>
-        <Col md={8}>
-          <Card className="shadow-sm border-0">
-            <Card.Body>
-              <h5>Recent Bookings</h5>
-              <Table striped bordered hover responsive>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>User</th>
-                    <th>Flight</th>
-                    <th>Booking Date</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>1</td>
-                    <td>Jane Doe</td>
-                    <td>New York to London</td>
-                    <td>2024-12-01</td>
-                    <td>Confirmed</td>
-                  </tr>
-                  <tr>
-                    <td>2</td>
-                    <td>John Smith</td>
-                    <td>Nairobi to Dubai</td>
-                    <td>2024-12-05</td>
-                    <td>Pending</td>
-                  </tr>
-                  <tr>
-                    <td>3</td>
-                    <td>Mary Johnson</td>
-                    <td>Paris to Rome</td>
-                    <td>2024-12-06</td>
-                    <td>Cancelled</td>
-                  </tr>
-                </tbody>
-              </Table>
-            </Card.Body>
-          </Card>
-        </Col>
-        <Col md={4}>
-          <Card className="shadow-sm border-0">
-            <Card.Body>
-              <h5>System Alerts</h5>
-              <ul className="list-unstyled">
-                <li className="mb-2">
-                  <span className="text-success">✔</span> 320 flights scheduled today
-                </li>
-                <li className="mb-2">
-                  <span className="text-warning">⚠</span> Revenue target at 50%
-                </li>
-                <li className="mb-2">
-                  <span className="text-danger">✖</span> 3 flights canceled
-                </li>
-              </ul>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+      <row>
+        <table className="table table-striped table-hover">
+          <thead>
+            <tr>
+              <th>Flight No</th>
+              <th>Origin</th>
+              <th>Destination</th>
+              <th>Time</th>
+              <th>Date</th>
+              <th>Seat(s)</th>
+              <th>Name</th>
+              <th>Email</th>
+            </tr>
+          </thead>
+          <tbody>
+            {viewBooking.slice(-3).map((booking) => (
+              <tr key={booking.id}>
+                <td>{booking.flightNumber}</td>
+                <td>{booking.origin}</td>
+                <td>{booking.destination}</td>
+                <td>{booking.time}</td>
+                <td>{booking.date}</td>
+                <td>{booking.seatNo}</td>
+                <td>{booking.firstName}</td>
+                <td>{booking.email}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </row>
     </div>
   );
 };
