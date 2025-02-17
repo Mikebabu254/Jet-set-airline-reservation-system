@@ -18,7 +18,7 @@ const UserFlightSchedule = () => {
     const [bookedSeats, setBookedSeats] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const flightsPerPage = 1; // Display 2 flights per page
+    const flightsPerPage =5; // Display 2 flights per page
 
     // Load logged-in user from localStorage
     useEffect(() => {
@@ -270,7 +270,7 @@ const UserFlightSchedule = () => {
                 </table>
 
                 <div className="d-flex justify-content-center">
-                    <span className="mr-2">{`Page ${currentPage}`}</span>
+                <span className="mr-2">{`Page ${currentPage}`}</span>
                     <button
                         className="btn btn-outline-secondary mx-2"
                         disabled={currentPage === 1}
@@ -280,12 +280,12 @@ const UserFlightSchedule = () => {
                     </button>
                     <button
                         className="btn btn-outline-secondary mx-2"
+                        disabled={currentPage * flightsPerPage >= flights.length}
                         onClick={() => setCurrentPage((prev) => prev + 1)}
                     >
                         Next
                     </button>
                 </div>
-
 
                 {selectedFlight && (
                     <Modal show onHide={() => setSelectedFlight(null)}>
