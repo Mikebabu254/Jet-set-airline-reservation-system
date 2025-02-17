@@ -18,7 +18,7 @@ const UserFlightSchedule = () => {
     const [bookedSeats, setBookedSeats] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
 
-    const flightsPerPage =5; // Display 2 flights per page
+    const flightsPerPage = 5; // Display 5 flights per page
 
     // Load logged-in user from localStorage
     useEffect(() => {
@@ -103,36 +103,40 @@ const UserFlightSchedule = () => {
             alert("Please select at least one seat.");
             return;
         }
-
+    
         try {
-            const receiptNumber = generateReceiptNumber();
-
-            const reservation = {
+            // Generate receipt numbers for each seat selected
+            const receiptNumbers = selectedSeats.map(() => generateReceiptNumber());
+    
+            const reservations = selectedSeats.map((seat, index) => ({
                 flightNumber: selectedFlight.flightNumber,
                 origin: selectedFlight.origin,
                 destination: selectedFlight.destination,
                 time: selectedFlight.time,
                 date: selectedFlight.date,
-                selectedSeats,
+                selectedSeats: [seat], // Store the seat number for each reservation
                 price: selectedFlight.price,
-                receiptNumber,
-            };
-
-            if (loggedInUser) {
-                reservation.firstName = loggedInUser.firstName;
-                reservation.email = loggedInUser.email;
-            }
-
-            await axios.post("http://localhost:3000/booking-flight", reservation);
-
+                receiptNumber: receiptNumbers[index], // Assign corresponding receipt number
+                firstName: loggedInUser?.firstName,
+                email: loggedInUser?.email,
+            }));
+    
+            // Send multiple reservations to backend
+            await Promise.all(
+                reservations.map((reservation) =>
+                    axios.post("http://localhost:3000/booking-flight", reservation)
+                )
+            );
+    
+            // Update the booked seats in the backend
             await axios.patch("http://localhost:3000/seat-book-flight", {
                 flightNumber: selectedFlight.flightNumber,
                 date: selectedFlight.date,
                 selectedSeats,
-                receiptNumber,
+                receiptNumbers, // Send all receipt numbers
             });
-
-            alert(`Reservation successful! Your receipt number: ${receiptNumber}`);
+    
+            alert(`Reservation successful! Your receipt numbers: ${receiptNumbers.join(", ")}`);
             setSelectedFlight(null);
             fetchFlights();
         } catch (err) {
@@ -140,6 +144,7 @@ const UserFlightSchedule = () => {
             alert("Failed to make reservation. Please try again.");
         }
     };
+    
 
     const renderSeatGrid = (flight) => {
         const totalSeats = flight.noOfSeats || 0;
@@ -270,7 +275,7 @@ const UserFlightSchedule = () => {
                 </table>
 
                 <div className="d-flex justify-content-center">
-                <span className="mr-2">{`Page ${currentPage}`}</span>
+                    <span className="mr-2">{`Page ${currentPage}`}</span>
                     <button
                         className="btn btn-outline-secondary mx-2"
                         disabled={currentPage === 1}
