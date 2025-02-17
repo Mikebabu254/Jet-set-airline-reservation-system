@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import JsBarcode from "jsbarcode";
 import UserNavBar from "../Components/UserNavBar";
 import Footer from "../Components/Footer";
 
@@ -52,16 +53,35 @@ function UserBookings() {
         fetchBookings();
     }, []);
 
+    useEffect(() => {
+        bookings.forEach((booking) => {
+            if (booking.receiptNumber) {
+                const barcodeCanvas = document.getElementById(`barcode-${booking.receiptNumber}`);
+                if (barcodeCanvas) {
+                    JsBarcode(barcodeCanvas, booking.receiptNumber, {
+                        format: "CODE128",
+                        width: 1.5, // ✅ Reduced width
+                        height: 30, // ✅ Reduced height
+                        displayValue: false, // Hides the number text
+                    });
+                }
+            }
+        });
+    }, [bookings]);
+
     const generatePDF = async (booking) => {
         const ticketElement = document.getElementById(`ticket-${booking.receiptNumber}`);
         if (!ticketElement) return;
 
+        // Convert ticket to image
         const canvas = await html2canvas(ticketElement, { scale: 2 });
-        const imgData = canvas.toDataURL("image/png");
+        const ticketImgData = canvas.toDataURL("image/png");
 
         // Set custom receipt size (8.5 x 3.5 inches)
-        const pdf = new jsPDF("l", "in", [8.5, 3.5]); // 'l' for landscape mode
-        pdf.addImage(imgData, "PNG", 0, 0, 8.5, 3.5);
+        const pdf = new jsPDF("l", "in", [8.5, 3.5]);
+
+        // Add ticket image to PDF
+        pdf.addImage(ticketImgData, "PNG", 0.2, 0.2, 8.1, 2.8);
         pdf.save(`Ticket_${booking.receiptNumber || "unknown"}.pdf`);
     };
 
@@ -95,6 +115,11 @@ function UserBookings() {
                                 <p>Time: <strong>{booking.time}</strong></p>
                                 <p>Board Till: <strong>{booking.time}</strong></p>
                                 <p className="price">Price: <strong>{"ksh. " + booking.price + ".00"}</strong></p>
+
+                                {/* Barcode Inside Ticket */}
+                                <div className="barcode-container">
+                                    <canvas id={`barcode-${booking.receiptNumber}`} />
+                                </div>
                             </div>
                         </div>
 
