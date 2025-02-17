@@ -28,11 +28,10 @@ function Footer() {
                     
                     {/* Description */}
                     <div className="col-md-4 mb-3">
-                        <p>
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. 
-                            Accusantium tempore quae suscipit sint numquam adipisci iure neque saepe? 
-                            Doloribus cumque minima aperiam aliquam est velit.
-                        </p>
+                    <p>
+                        JetSet Airline Reservation System offers seamless booking experiences for your travel needs. 
+                        Enjoy easy flight reservations, manage your bookings, and stay updated with the latest travel information.
+                    </p>
                     </div>
                 </div>
 
