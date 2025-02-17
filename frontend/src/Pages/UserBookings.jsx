@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import UserNavBar from "../Components/UserNavBar";
 import Footer from "../Components/Footer";
 
@@ -36,7 +38,7 @@ function UserBookings() {
                         gate: "18",
                         time: booking.time,
                         price: booking.price,
-                        receiptNumber: booking.receiptNumber, // ✅ Added receipt number
+                        receiptNumber: booking.receiptNumber,
                     }))
                 );
                 setBookings(expandedBookings);
@@ -50,6 +52,18 @@ function UserBookings() {
         fetchBookings();
     }, []);
 
+    const generatePDF = async (booking) => {
+        const ticketElement = document.getElementById(`ticket-${booking.receiptNumber}`);
+        if (!ticketElement) return;
+
+        const canvas = await html2canvas(ticketElement, { scale: 2 });
+        const imgData = canvas.toDataURL("image/png");
+
+        const pdf = new jsPDF("p", "mm", "a4");
+        pdf.addImage(imgData, "PNG", 10, 10, 190, 0);
+        pdf.save(`Ticket_${booking.receiptNumber || "unknown"}.pdf`);
+    };
+
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
 
@@ -58,27 +72,35 @@ function UserBookings() {
             <UserNavBar />
             <div className="tickets-container">
                 {bookings.map((booking, index) => (
-                    <div key={index} className="ticket">
-                        <div className="ticket-left">
-                            <div className="ticket-logo">
-                                <h2>Jet Set Airline</h2>
+                    <div key={index} className="ticket-wrapper">
+                        {/* Ticket Content */}
+                        <div id={`ticket-${booking.receiptNumber}`} className="ticket">
+                            <div className="ticket-left">
+                                <div className="ticket-logo">
+                                    <h2>Jet Set Airline</h2>
+                                </div>
+                                <div className="ticket-info">
+                                    <p>Passenger Name: <strong>{booking.passengerName}</strong></p>
+                                    <p>From: <strong>{booking.origin}</strong></p>
+                                    <p>To: <strong>{booking.destination}</strong></p>
+                                    <p>Date: <strong>{new Date(booking.date).toLocaleDateString()}</strong></p>
+                                    <p>Flight: <strong>{booking.flightNumber}</strong></p>
+                                    <p>Gate: <strong>{booking.gate}</strong></p>
+                                </div>
                             </div>
-                            <div className="ticket-info">
-                                <p>Passenger Name: <strong>{booking.passengerName}</strong></p>
-                                <p>From: <strong>{booking.origin}</strong></p>
-                                <p>To: <strong>{booking.destination}</strong></p>
-                                <p>Date: <strong>{new Date(booking.date).toLocaleDateString()}</strong></p>
-                                <p>Flight: <strong>{booking.flightNumber}</strong></p>
-                                <p>Gate: <strong>{booking.gate}</strong></p>
+                            <div className="ticket-right">
+                                <p>Receipt No: <strong>{booking.receiptNumber || "N/A"}</strong></p>
+                                <p>Seat: <strong>{booking.seatNo}</strong></p>
+                                <p>Time: <strong>{booking.time}</strong></p>
+                                <p>Board Till: <strong>{booking.time}</strong></p>
+                                <p className="price">Price: <strong>{"ksh. " + booking.price + ".00"}</strong></p>
                             </div>
                         </div>
-                        <div className="ticket-right">
-                            <p>Receipt No: <strong>{booking.receiptNumber || "N/A"}</strong></p> {/* ✅ Display receipt number */}
-                            <p>Seat: <strong>{booking.seatNo}</strong></p>
-                            <p>Time: <strong>{booking.time}</strong></p>
-                            <p>Board Till: <strong>{booking.time}</strong></p>
-                            <p className="price">Price: <strong>{"ksh. " + booking.price + ".00"}</strong></p>
-                        </div>
+
+                        {/* Download Button Outside the Ticket */}
+                        <button onClick={() => generatePDF(booking)} className="download-btn">
+                            Download Ticket as PDF
+                        </button>
                     </div>
                 ))}
             </div>
