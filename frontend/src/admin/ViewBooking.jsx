@@ -62,7 +62,7 @@ const ViewBooking = () => {
               <td>{booking.destination}</td>
               <td>{booking.time}</td>
               <td>{booking.date}</td>
-              <td>{booking.seatNo}</td>
+              <td>{Array.isArray(booking.seatNo) ? booking.seatNo.join(', '): booking.seatNo}</td>
               <td>{booking.firstName}</td>
               <td>{booking.email}</td>              
               <td>

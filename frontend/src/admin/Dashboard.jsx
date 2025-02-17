@@ -51,8 +51,8 @@ const Dashboard = () => {
 
       {/* Stats Cards */}
       <Row className="mb-4">
-        <Col md={3}>
-          <Card className="text-center shadow-sm border-0">
+        <Col md={3} >
+          <Card className="text-center shadow-sm border-0 bg-info" id="booking-card">
             <Card.Body>
               <FaUsers size={40} className="text-primary mb-2" />
               <h5>Total Users</h5>
@@ -63,7 +63,7 @@ const Dashboard = () => {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center shadow-sm border-0">
+          <Card className="text-center shadow-sm border-0 bg-info" id="booking-card">
             <Card.Body>
               <FaPlane size={40} className="text-success mb-2" />
               <h5>Flights Scheduled</h5>
@@ -74,7 +74,7 @@ const Dashboard = () => {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center shadow-sm border-0">
+          <Card className="text-center shadow-sm border-0 bg-info" id="booking-card">
             <Card.Body>
               <FaCity size={40} className="text-warning mb-2" />
               <h5>Cities</h5>
@@ -85,7 +85,7 @@ const Dashboard = () => {
           </Card>
         </Col>
         <Col md={3}>
-          <Card className="text-center shadow-sm border-0">
+          <Card className="text-center shadow-sm border-0 bg-info " id="booking-card">
             <Card.Body>
               <FaClipboardList size={40} className="text-danger mb-2" />
               <h5>Bookings</h5>
@@ -111,14 +111,14 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {viewBooking.slice(-3).map((booking) => (
+            {viewBooking.slice(-6).map((booking) => (
               <tr key={booking.id}>
                 <td>{booking.flightNumber}</td>
                 <td>{booking.origin}</td>
                 <td>{booking.destination}</td>
                 <td>{booking.time}</td>
                 <td>{booking.date}</td>
-                <td>{booking.seatNo}</td>
+                <td>{Array.isArray(booking.seatNo) ? booking.seatNo.join(', '): booking.seatNo}</td>
                 <td>{booking.firstName}</td>
                 <td>{booking.email}</td>
               </tr>

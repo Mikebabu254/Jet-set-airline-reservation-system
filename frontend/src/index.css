@@ -51,3 +51,6 @@
     color: black;
   }
   
+#booking-card{
+    cursor: pointer;
+}
