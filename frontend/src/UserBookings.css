@@ -15,11 +15,11 @@
 }
 
 .ticket {
-    width: 20cm;
+    width: 22cm;
     height: auto;
     display: flex;
     border: 1px solid var(--grey);
-    border-radius: 8px;
+    border-radius: 0px;
     background-color: var(--light-turquoise);
     position: relative;
     overflow: hidden;

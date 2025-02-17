@@ -73,15 +73,15 @@ function UserBookings() {
         const ticketElement = document.getElementById(`ticket-${booking.receiptNumber}`);
         if (!ticketElement) return;
 
-        // Convert ticket to image
-        const canvas = await html2canvas(ticketElement, { scale: 2 });
+        // Convert ticket to image without background
+        const canvas = await html2canvas(ticketElement, { scale: 2, backgroundColor: null });
         const ticketImgData = canvas.toDataURL("image/png");
 
-        // Set custom receipt size (8.5 x 3.5 inches)
+        // Set custom receipt size (8.5 x 3.5 inches) without borders
         const pdf = new jsPDF("l", "in", [8.5, 3.5]);
 
-        // Add ticket image to PDF
-        pdf.addImage(ticketImgData, "PNG", 0.2, 0.2, 8.1, 2.8);
+        // Remove margins and ensure full ticket coverage
+        pdf.addImage(ticketImgData, "PNG", 0, 0, 8.5, 3.5);
         pdf.save(`Ticket_${booking.receiptNumber || "unknown"}.pdf`);
     };
 
