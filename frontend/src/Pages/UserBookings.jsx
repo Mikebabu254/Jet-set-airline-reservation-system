@@ -60,9 +60,9 @@ function UserBookings() {
                 if (barcodeCanvas) {
                     JsBarcode(barcodeCanvas, booking.receiptNumber, {
                         format: "CODE128",
-                        width: 1.5, // ✅ Reduced width
-                        height: 30, // ✅ Reduced height
-                        displayValue: false, // Hides the number text
+                        width: 1.5,
+                        height: 30,
+                        displayValue: false,
                     });
                 }
             }
@@ -73,16 +73,31 @@ function UserBookings() {
         const ticketElement = document.getElementById(`ticket-${booking.receiptNumber}`);
         if (!ticketElement) return;
 
-        // Convert ticket to image without background
         const canvas = await html2canvas(ticketElement, { scale: 2, backgroundColor: null });
         const ticketImgData = canvas.toDataURL("image/png");
 
-        // Set custom receipt size (8.5 x 3.5 inches) without borders
         const pdf = new jsPDF("l", "in", [8.5, 3.5]);
-
-        // Remove margins and ensure full ticket coverage
         pdf.addImage(ticketImgData, "PNG", 0, 0, 8.5, 3.5);
         pdf.save(`Ticket_${booking.receiptNumber || "unknown"}.pdf`);
+    };
+
+    const cancelBooking = async (receiptNumber) => {
+        try {
+            const response = await fetch(`http://localhost:3000/cancel-booking`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ receiptNumber }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Failed to cancel booking");
+            }
+
+            setBookings((prevBookings) => prevBookings.filter(booking => booking.receiptNumber !== receiptNumber));
+            alert("Booking canceled successfully");
+        } catch (error) {
+            alert("Error canceling booking: " + error.message);
+        }
     };
 
     if (loading) return <p>Loading...</p>;
@@ -94,7 +109,6 @@ function UserBookings() {
             <div className="tickets-container">
                 {bookings.map((booking, index) => (
                     <div key={index} className="ticket-wrapper">
-                        {/* Ticket Content */}
                         <div id={`ticket-${booking.receiptNumber}`} className="ticket">
                             <div className="ticket-left">
                                 <div className="ticket-logo">
@@ -115,17 +129,16 @@ function UserBookings() {
                                 <p>Time: <strong>{booking.time}</strong></p>
                                 <p>Board Till: <strong>{booking.time}</strong></p>
                                 <p className="price">Price: <strong>{"ksh. " + booking.price + ".00"}</strong></p>
-
-                                {/* Barcode Inside Ticket */}
                                 <div className="barcode-container">
                                     <canvas id={`barcode-${booking.receiptNumber}`} />
                                 </div>
                             </div>
                         </div>
-
-                        {/* Download Button Outside the Ticket */}
                         <button onClick={() => generatePDF(booking)} className="download-btn">
                             Download Ticket as PDF
+                        </button>
+                        <button onClick={() => cancelBooking(booking.receiptNumber)} className="cancel-btn">
+                            Cancel Booking
                         </button>
                     </div>
                 ))}

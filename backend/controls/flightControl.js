@@ -189,4 +189,35 @@ const countFlight = async (req, res) =>{
   }
 }
 
+const cancelBooking = async (req, res) => {
+  try {
+      const { receiptNumber } = req.body;
+
+      if (!receiptNumber) {
+          return res.status(400).json({ error: "Receipt number is required" });
+      }
+
+      // Find the booking by receipt number
+      const deletedBooking = await bookingFlights.findOneAndDelete({ receiptNumber });
+
+      if (!deletedBooking) {
+          return res.status(404).json({ error: "Booking not found" });
+      }
+
+      // Remove the booked seats from SeatBooking collection
+      await SeatBooking.updateOne(
+          { flightNumber: deletedBooking.flightNumber, date: deletedBooking.date },
+          { $pull: { seatNo: { $in: deletedBooking.seatNo } } }
+      );
+
+      res.json({ message: "Booking canceled successfully and seats released" });
+
+  } catch (error) {
+      console.error("Error canceling booking:", error);
+      res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+
+
 module.exports = { addFlight, deleteFlight, viewFlight, modifyFlight, viewAllFlights, bookFlight, countFlight, seatBookFlight, checkingSeat};
