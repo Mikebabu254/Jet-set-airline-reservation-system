@@ -14,6 +14,8 @@ import EditFlight from './admin/EditFlight';
 import UserBookings from './Pages/UserBookings';
 import Profile from './Pages/profile';
 import Support from './Pages/Support';
+import PaymentPage from './Pages/PaymentPage';
+import PaymentSuccess from './Pages/PaymentSuccess';
 
 
 function App() {
@@ -32,6 +34,8 @@ function App() {
         <Route path="/booking" element={<UserBookings/>}/>
         <Route path="/profile" element={<Profile/>}/>
         <Route path='/support' element={<Support/>}/>
+        <Route path='/payment' element={<PaymentPage/>}/>
+        <Route path="/payment-success" element={<PaymentSuccess/>} />
       </Routes>
     </BrowserRouter>
   );
