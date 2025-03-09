@@ -1,4 +1,5 @@
 const Payment = require("../models/paymentModel");
+const Booking = require("../models/reservationModel")
 
 // Initiate Payment (First-time payment setup)
 const initiatePayment = async (req, res) => {
@@ -25,36 +26,28 @@ const initiatePayment = async (req, res) => {
 // Make an Installment Payment
 const makePayment = async (req, res) => {
     try {
-        const { paymentId, amount, method, transactionId } = req.body;
-        if (!paymentId || !amount || !method || !transactionId) {
-            return res.status(400).json({ error: "All fields are required" });
+        const { receiptNumber, amount, method, details } = req.body;
+
+        if (!receiptNumber || !amount || !method) {
+            return res.status(400).json({ error: "Receipt Number, amount, and method are required" });
         }
 
-        const payment = await Payment.findById(paymentId);
-        if (!payment) {
-            return res.status(404).json({ error: "Payment record not found" });
+        const booking = await Booking.findOne({ receiptNumber });
+        if (!booking) {
+            return res.status(404).json({ error: "Booking not found" });
         }
 
-        if (amount > payment.balance) {
-            return res.status(400).json({ error: "Payment exceeds the remaining balance" });
+        if (booking.status === "paid") {
+            return res.status(400).json({ error: "Booking is already paid" });
         }
 
-        // Update the payment record
-        payment.amountPaid += amount;
-        payment.balance -= amount;
-        payment.transactionHistory.push({ amount, method, transactionId });
+        // Simulate successful payment (you can integrate actual payment gateway logic here)
+        booking.status = "paid";
+        await booking.save();
 
-        // Update status
-        if (payment.balance === 0) {
-            payment.status = "completed";
-        } else {
-            payment.status = "partially paid";
-        }
-
-        await payment.save();
-        res.json({ message: "Payment successful", newBalance: payment.balance, status: payment.status });
+        res.json({ message: "Payment successful", status: "paid" });
     } catch (error) {
-        res.status(500).json({ error: "Payment processing failed" });
+        res.status(500).json({ error: "Error processing payment", details: error.message });
     }
 };
 

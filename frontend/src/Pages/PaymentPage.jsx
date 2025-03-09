@@ -31,12 +31,30 @@ function PaymentPage() {
         }
 
         setError("");
-        alert(`Processing ${paymentMethod.toUpperCase()} payment for Receipt No: ${receiptNumber}`);
 
-        // Simulate payment processing and navigate to success page
-        setTimeout(() => {
+        try {
+            const response = await fetch("http://localhost:3000/pay", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    receiptNumber,
+                    amount: 1000, // Adjust according to ticket price
+                    method: paymentMethod,
+                    details: formData, // Send relevant payment details
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error("Payment failed");
+            }
+
+            const result = await response.json();
+            alert(`Payment successful! Status: ${result.status}`);
+
             navigate("/payment-success");
-        }, 2000);
+        } catch (error) {
+            setError(error.message);
+        }
     };
 
     return (
