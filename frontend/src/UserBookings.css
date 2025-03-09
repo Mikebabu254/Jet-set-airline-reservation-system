@@ -78,3 +78,15 @@
     width:200px;
     border-radius: 5px;
 }
+
+.unpaid-badge {
+    display: inline-block;
+    background-color: red;
+    color: white;
+    font-size: 14px;
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 5px;
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}

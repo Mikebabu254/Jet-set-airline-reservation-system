@@ -40,6 +40,7 @@ function UserBookings() {
                         time: booking.time,
                         price: booking.price,
                         receiptNumber: booking.receiptNumber,
+                        status: "Unpaid", // Add status for unpaid tickets
                     }))
                 );
                 setBookings(expandedBookings);
@@ -131,6 +132,7 @@ function UserBookings() {
                                 </div>
                             </div>
                             <div className="ticket-right">
+                                <span className="unpaid-badge">Unpaid</span> {/* Unpaid Badge */}
                                 <p>Receipt No: <strong>{booking.receiptNumber || "N/A"}</strong></p>
                                 <p>Seat: <strong>{booking.seatNo}</strong></p>
                                 <p>Time: <strong>{booking.time}</strong></p>
