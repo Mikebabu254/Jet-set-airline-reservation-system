@@ -82,23 +82,30 @@ function UserBookings() {
     };
 
     const cancelBooking = async (receiptNumber) => {
+        const isConfirmed = window.confirm("Are you sure you want to cancel this booking?");
+        
+        if (!isConfirmed) {
+            return; // Stop execution if the user cancels
+        }
+    
         try {
             const response = await fetch(`http://localhost:3000/cancel-booking`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ receiptNumber }),
             });
-
+    
             if (!response.ok) {
                 throw new Error("Failed to cancel booking");
             }
-
+    
             setBookings((prevBookings) => prevBookings.filter(booking => booking.receiptNumber !== receiptNumber));
             alert("Booking canceled successfully");
         } catch (error) {
             alert("Error canceling booking: " + error.message);
         }
     };
+    
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
