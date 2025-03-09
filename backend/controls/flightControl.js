@@ -220,4 +220,4 @@ const cancelBooking = async (req, res) => {
 
 
 
-module.exports = { addFlight, deleteFlight, viewFlight, modifyFlight, viewAllFlights, bookFlight, countFlight, seatBookFlight, checkingSeat};
+module.exports = { addFlight, deleteFlight, viewFlight, modifyFlight, viewAllFlights, bookFlight, countFlight, seatBookFlight, checkingSeat, cancelBooking};
