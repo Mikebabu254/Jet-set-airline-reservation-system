@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import JsBarcode from "jsbarcode";
@@ -9,6 +10,7 @@ function UserBookings() {
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchBookings = async () => {
@@ -40,7 +42,7 @@ function UserBookings() {
                         time: booking.time,
                         price: booking.price,
                         receiptNumber: booking.receiptNumber,
-                        status: "Unpaid", // Add status for unpaid tickets
+                        status: booking.status || "unpaid", // Added status
                     }))
                 );
                 setBookings(expandedBookings);
@@ -86,7 +88,7 @@ function UserBookings() {
         const isConfirmed = window.confirm("Are you sure you want to cancel this booking?");
         
         if (!isConfirmed) {
-            return; // Stop execution if the user cancels
+            return;
         }
     
         try {
@@ -106,7 +108,11 @@ function UserBookings() {
             alert("Error canceling booking: " + error.message);
         }
     };
-    
+
+    // Navigate to payment page
+    const goToPayment = (receiptNumber) => {
+        navigate(`/payment?receiptNumber=${receiptNumber}`);
+    };
 
     if (loading) return <p>Loading...</p>;
     if (error) return <p>Error: {error}</p>;
@@ -132,7 +138,6 @@ function UserBookings() {
                                 </div>
                             </div>
                             <div className="ticket-right">
-                                <span className="unpaid-badge">Unpaid</span> {/* Unpaid Badge */}
                                 <p>Receipt No: <strong>{booking.receiptNumber || "N/A"}</strong></p>
                                 <p>Seat: <strong>{booking.seatNo}</strong></p>
                                 <p>Time: <strong>{booking.time}</strong></p>
@@ -141,11 +146,19 @@ function UserBookings() {
                                 <div className="barcode-container">
                                     <canvas id={`barcode-${booking.receiptNumber}`} />
                                 </div>
+                                {booking.status === "unpaid" && (
+                                    <div className="badge">Unpaid</div>
+                                )}
                             </div>
                         </div>
                         <button onClick={() => generatePDF(booking)} className="download-btn">
                             Download Ticket as PDF
                         </button>
+                        {booking.status === "unpaid" && (
+                            <button onClick={() => goToPayment(booking.receiptNumber)} className="pay-btn">
+                                Pay Now
+                            </button>
+                        )}
                         <button onClick={() => cancelBooking(booking.receiptNumber)} className="cancel-btn">
                             Cancel Booking
                         </button>
