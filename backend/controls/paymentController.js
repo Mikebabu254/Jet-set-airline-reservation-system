@@ -1,15 +1,16 @@
 const Payment = require("../models/paymentModel");
+const Reservation = require("../models/reservationModel")
 
 // Initiate Payment (First-time payment setup)
 const initiatePayment = async (req, res) => {
     try {
-        const { userId, totalAmount, method } = req.body;
-        if (!userId || !totalAmount || !method) {
+        const { email, totalAmount, method } = req.body;
+        if (!email || !totalAmount || !method) {
             return res.status(400).json({ error: "All fields are required" });
         }
 
         const payment = new Payment({
-            userId,
+            email,
             totalAmount,
             balance: totalAmount, // Initially, balance is the total amount
             method,
@@ -22,19 +23,41 @@ const initiatePayment = async (req, res) => {
     }
 };
 
+
+
 // Make Payment (Full or Partial)
+// const Reservation = require("../models/reservationModel"); // Import reservation model
+// const Payment = require("../models/paymentModel"); // Import payment model
+
 const makePayment = async (req, res) => {
     try {
-        const { receiptNumber, amountPaid } = req.body;
+        const { receiptNumber, amountPaid, method } = req.body;
+        console.log(method)
 
-        if (!receiptNumber || !amountPaid) {
-            return res.status(400).json({ error: "Receipt number and amount are required" });
+        if (!receiptNumber || !amountPaid || !method) {
+            return res.status(400).json({ error: "Receipt number, amount, and payment method are required" });
         }
 
-        const payment = await Payment.findOne({ receiptNumber });
+        // Find the reservation using the receipt number
+        const reservation = await Reservation.findOne({ receiptNumber });
+
+        if (!reservation) {
+            return res.status(404).json({ error: "Reservation not found" });
+        }
+
+        const { email, price } = reservation; // Extract email and price
+
+        // Check if a payment record already exists for this user
+        let payment = await Payment.findOne({ email });
 
         if (!payment) {
-            return res.status(404).json({ error: "Payment record not found" });
+            // If no payment exists, create a new one
+            payment = new Payment({
+                email,
+                totalAmount: price, // Set total amount as the reservation price
+                balance: price, // Initial balance is the full price
+                method,
+            });
         }
 
         if (amountPaid <= 0) {
@@ -45,12 +68,14 @@ const makePayment = async (req, res) => {
             return res.status(400).json({ error: "Amount exceeds remaining balance" });
         }
 
+        // Deduct payment amount
         payment.balance -= amountPaid;
+
         if (payment.balance === 0) {
             payment.status = "paid"; // Mark as fully paid
         }
 
-        await payment.save();
+        await payment.save(); // Save the updated payment record
 
         res.json({
             message: "Payment successful",
@@ -61,6 +86,9 @@ const makePayment = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
+
+
 
 // Get Payment Status
 const getPaymentStatus = async (req, res) => {

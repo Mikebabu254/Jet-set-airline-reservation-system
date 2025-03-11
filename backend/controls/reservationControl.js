@@ -1,9 +1,12 @@
 const bookingFlights = require("../models/reservationModel")
 
-const bookFlight = async (req, res)=>{
-    const { from, to, departureDate, returnDate, price, payed } = req.body;
+const bookFlight = async (req, res) => {
+    const { from, to, departureDate, returnDate, price, payed, email } = req.body;
 
     try {
+        // Generate a unique receipt number
+        const receiptNumber = "RCPT-" + Math.floor(100000 + Math.random() * 900000);
+
         const newFlight = await bookingFlights.create({
             from,
             to,
@@ -11,15 +14,18 @@ const bookFlight = async (req, res)=>{
             returnDate,
             price,
             payed,
+            email, // Store the user's email
+            receiptNumber // Store receipt number
         });
-    
-        res.status(201).json(newFlight); 
-        console.log(newFlight)
+
+        res.status(201).json(newFlight);
     } catch (error) {
         console.error("Error adding flight:", error);
         res.status(500).json({ message: "Internal server error" });
     }
-}
+};
+
+
 
 const getUserBookings = async (req, res) => {
     const { email } = req.query; // Use req.query to match the frontend request

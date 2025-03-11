@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const PaymentSchema = new mongoose.Schema({
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    email: { type: String, required: true },
     totalAmount: { type: Number, required: true }, // Total amount due
     amountPaid: { type: Number, default: 0 }, // Amount paid so far
     balance: { type: Number, required: true }, // Remaining balance
