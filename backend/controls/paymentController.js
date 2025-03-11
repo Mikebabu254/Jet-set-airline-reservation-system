@@ -28,7 +28,8 @@ const initiatePayment = async (req, res) => {
 const makePayment = async (req, res) => {
     try {
         const { receiptNumber, amountPaid, method } = req.body;
-        console.log(receiptNumber)
+        console.log(receiptNumber);
+        
         if (!receiptNumber || !amountPaid || !method) {
             return res.status(400).json({ error: "Receipt number, amount, and payment method are required" });
         }
@@ -40,18 +41,19 @@ const makePayment = async (req, res) => {
             return res.status(404).json({ error: "Reservation not found" });
         }
 
-        const { email, price, flightNumber } = reservation;
+        const { email, price } = reservation;
 
-        // Find or create payment record
-        let payment = await Payment.findOne({ email, flightNumber });
+        // Find the existing payment record for the given receiptNumber
+        let payment = await Payment.findOne({ receiptNumber });
 
         if (!payment) {
+            // If no payment exists, create a new one
             payment = new Payment({
                 email,
                 totalAmount: price,
                 balance: price,
                 method,
-                receiptNumber, // Store the flight number
+                receiptNumber,
             });
         }
 
@@ -73,13 +75,14 @@ const makePayment = async (req, res) => {
             transactionId: `TXN-${Date.now()}`, // Generate a dummy transaction ID
         });
 
+        // Update payment status
         payment.status = payment.balance === 0 ? "completed" : "partially paid";
 
         await payment.save();
 
         res.json({
             message: "Payment successful",
-            flightNumber: payment.flightNumber,
+            receiptNumber: payment.receiptNumber,
             newBalance: payment.balance,
             status: payment.status,
         });
@@ -87,6 +90,7 @@ const makePayment = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
+
 
 // Get Payment Status
 const getPaymentStatus = async (req, res) => {

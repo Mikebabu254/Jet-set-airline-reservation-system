@@ -45,7 +45,7 @@ const getUserBookings = async (req, res) => {
 
                 return {
                     ...booking.toObject(),
-                    paymentStatus: payment ? payment.status : "Unpaid",
+                    paymentStatus: payment && payment.balance === 0 ? "Paid" : "Unpaid",
                     paidAmount: payment ? payment.totalAmount - payment.balance : 0,
                 };
             })
