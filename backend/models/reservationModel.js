@@ -11,6 +11,7 @@ const bookingFlightsSchema = new mongoose.Schema({
     firstName: String,
     email: String,
     receiptNumber: String,
+    reservationStatus: { type: String, default: "unpaid" }
 });
 
 module.exports = mongoose.model("BookingFlight", bookingFlightsSchema);

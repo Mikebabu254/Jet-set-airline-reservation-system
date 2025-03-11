@@ -1,5 +1,4 @@
 const Payment = require("../models/paymentModel");
-const Booking = require("../models/reservationModel")
 
 // Initiate Payment (First-time payment setup)
 const initiatePayment = async (req, res) => {
@@ -17,37 +16,49 @@ const initiatePayment = async (req, res) => {
         });
 
         await payment.save();
-        res.json({ message: "Payment record created", paymentId: payment._id, balance: totalAmount });
+        res.json({ message: "Payment record created", paymentId: payment._id });
     } catch (error) {
-        res.status(500).json({ error: "Payment initiation failed" });
+        res.status(500).json({ error: error.message });
     }
 };
 
-// Make an Installment Payment
+// Make Payment (Full or Partial)
 const makePayment = async (req, res) => {
     try {
-        const { receiptNumber, amount, method, details } = req.body;
+        const { receiptNumber, amountPaid } = req.body;
 
-        if (!receiptNumber || !amount || !method) {
-            return res.status(400).json({ error: "Receipt Number, amount, and method are required" });
+        if (!receiptNumber || !amountPaid) {
+            return res.status(400).json({ error: "Receipt number and amount are required" });
         }
 
-        const booking = await Booking.findOne({ receiptNumber });
-        if (!booking) {
-            return res.status(404).json({ error: "Booking not found" });
+        const payment = await Payment.findOne({ receiptNumber });
+
+        if (!payment) {
+            return res.status(404).json({ error: "Payment record not found" });
         }
 
-        if (booking.status === "paid") {
-            return res.status(400).json({ error: "Booking is already paid" });
+        if (amountPaid <= 0) {
+            return res.status(400).json({ error: "Invalid payment amount" });
         }
 
-        // Simulate successful payment (you can integrate actual payment gateway logic here)
-        booking.status = "paid";
-        await booking.save();
+        if (amountPaid > payment.balance) {
+            return res.status(400).json({ error: "Amount exceeds remaining balance" });
+        }
 
-        res.json({ message: "Payment successful", status: "paid" });
+        payment.balance -= amountPaid;
+        if (payment.balance === 0) {
+            payment.status = "paid"; // Mark as fully paid
+        }
+
+        await payment.save();
+
+        res.json({
+            message: "Payment successful",
+            newBalance: payment.balance,
+            status: payment.status,
+        });
     } catch (error) {
-        res.status(500).json({ error: "Error processing payment", details: error.message });
+        res.status(500).json({ error: error.message });
     }
 };
 
@@ -56,19 +67,14 @@ const getPaymentStatus = async (req, res) => {
     try {
         const { paymentId } = req.params;
         const payment = await Payment.findById(paymentId);
+
         if (!payment) {
             return res.status(404).json({ error: "Payment not found" });
         }
 
-        res.json({ 
-            totalAmount: payment.totalAmount,
-            amountPaid: payment.amountPaid,
-            balance: payment.balance,
-            status: payment.status,
-            transactionHistory: payment.transactionHistory,
-        });
+        res.json(payment);
     } catch (error) {
-        res.status(500).json({ error: "Error fetching payment status" });
+        res.status(500).json({ error: error.message });
     }
 };
 

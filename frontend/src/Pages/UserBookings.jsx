@@ -16,19 +16,19 @@ function UserBookings() {
         const fetchBookings = async () => {
             const user = JSON.parse(localStorage.getItem("user"));
             const email = user?.email;
-
+    
             if (!email) {
                 setError("User email not found. Please log in.");
                 setLoading(false);
                 return;
             }
-
+    
             try {
                 const response = await fetch(`http://localhost:3000/user-bookings?email=${email}`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch bookings");
                 }
-
+    
                 const data = await response.json();
                 const expandedBookings = data.flatMap((booking) =>
                     booking.seatNo.map((seat) => ({
@@ -42,7 +42,7 @@ function UserBookings() {
                         time: booking.time,
                         price: booking.price,
                         receiptNumber: booking.receiptNumber,
-                        status: booking.status || "unpaid", // Added status
+                        reservationStatus: booking.reservationStatus, // Fetch from DB
                     }))
                 );
                 setBookings(expandedBookings);
@@ -52,7 +52,7 @@ function UserBookings() {
                 setLoading(false);
             }
         };
-
+    
         fetchBookings();
     }, []);
 
@@ -146,7 +146,7 @@ function UserBookings() {
                                 <div className="barcode-container">
                                     <canvas id={`barcode-${booking.receiptNumber}`} />
                                 </div>
-                                {booking.status === "unpaid" && (
+                                {booking.reservationStatus === "unpaid" && (
                                     <div className="badge">Unpaid</div>
                                 )}
                             </div>
@@ -154,11 +154,12 @@ function UserBookings() {
                         <button onClick={() => generatePDF(booking)} className="download-btn">
                             Download Ticket as PDF
                         </button>
-                        {booking.status === "unpaid" && (
+                        {booking.reservationStatus === "unpaid" && (
                             <button onClick={() => goToPayment(booking.receiptNumber)} className="pay-btn">
                                 Pay Now
                             </button>
                         )}
+
                         <button onClick={() => cancelBooking(booking.receiptNumber)} className="cancel-btn">
                             Cancel Booking
                         </button>
