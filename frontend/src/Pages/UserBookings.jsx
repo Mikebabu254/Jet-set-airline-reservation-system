@@ -16,19 +16,19 @@ function UserBookings() {
         const fetchBookings = async () => {
             const user = JSON.parse(localStorage.getItem("user"));
             const email = user?.email;
-    
+
             if (!email) {
                 setError("User email not found. Please log in.");
                 setLoading(false);
                 return;
             }
-    
+
             try {
                 const response = await fetch(`http://localhost:3000/user-bookings?email=${email}`);
                 if (!response.ok) {
                     throw new Error("Failed to fetch bookings");
                 }
-    
+
                 const data = await response.json();
                 const expandedBookings = data.flatMap((booking) =>
                     booking.seatNo.map((seat) => ({
@@ -42,9 +42,13 @@ function UserBookings() {
                         time: booking.time,
                         price: booking.price,
                         receiptNumber: booking.receiptNumber,
-                        reservationStatus: booking.reservationStatus, // Fetch from DB
+                        reservationStatus: booking.reservationStatus,
+                        paymentStatus: booking.paymentStatus || "Unpaid",
+                        paidAmount: booking.paidAmount || 0,
+                        balance: Math.max(0, booking.price - (booking.paidAmount || 0)), // Balance Calculation
                     }))
                 );
+
                 setBookings(expandedBookings);
             } catch (err) {
                 setError(err.message);
@@ -52,7 +56,7 @@ function UserBookings() {
                 setLoading(false);
             }
         };
-    
+
         fetchBookings();
     }, []);
 
@@ -87,21 +91,19 @@ function UserBookings() {
     const cancelBooking = async (receiptNumber) => {
         const isConfirmed = window.confirm("Are you sure you want to cancel this booking?");
         
-        if (!isConfirmed) {
-            return;
-        }
-    
+        if (!isConfirmed) return;
+
         try {
             const response = await fetch(`http://localhost:3000/cancel-booking`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ receiptNumber }),
             });
-    
+
             if (!response.ok) {
                 throw new Error("Failed to cancel booking");
             }
-    
+
             setBookings((prevBookings) => prevBookings.filter(booking => booking.receiptNumber !== receiptNumber));
             alert("Booking canceled successfully");
         } catch (error) {
@@ -142,24 +144,42 @@ function UserBookings() {
                                 <p>Seat: <strong>{booking.seatNo}</strong></p>
                                 <p>Time: <strong>{booking.time}</strong></p>
                                 <p>Board Till: <strong>{booking.time}</strong></p>
-                                <p className="price">Price: <strong>{"ksh. " + booking.price + ".00"}</strong></p>
+                                <p className="price">Price: <strong>{"Ksh. " + booking.price + ".00"}</strong></p>
+
+                                {/* Payment Section */}
+                                <p>Paid Amount: <strong>Ksh. {booking.paidAmount}.00</strong></p>
+                                <p>
+                                    Balance:{" "}
+                                    <strong style={{ color: booking.balance === 0 ? "green" : "red" }}>
+                                        {booking.balance === 0 ? "Fully Paid" : `Ksh. ${booking.balance}.00`}
+                                    </strong>
+                                </p>
+
                                 <div className="barcode-container">
                                     <canvas id={`barcode-${booking.receiptNumber}`} />
                                 </div>
-                                {booking.reservationStatus === "unpaid" && (
-                                    <div className="badge">Unpaid</div>
+
+                                {booking.paymentStatus === "Unpaid" ? (
+                                    <div className="badge unpaid">Unpaid</div>
+                                ) : (
+                                    <div className="badge paid">Paid</div>
                                 )}
                             </div>
                         </div>
+
+                        {/* Download PDF Button */}
                         <button onClick={() => generatePDF(booking)} className="download-btn">
                             Download Ticket as PDF
                         </button>
-                        {booking.reservationStatus === "unpaid" && (
+
+                        {/* Show Payment Button If Unpaid */}
+                        {booking.balance > 0 && (
                             <button onClick={() => goToPayment(booking.receiptNumber)} className="pay-btn">
                                 Pay Now
                             </button>
                         )}
 
+                        {/* Cancel Booking Button */}
                         <button onClick={() => cancelBooking(booking.receiptNumber)} className="cancel-btn">
                             Cancel Booking
                         </button>

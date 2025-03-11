@@ -7,6 +7,7 @@ const PaymentSchema = new mongoose.Schema({
     balance: { type: Number, required: true }, // Remaining balance
     method: { type: String, enum: ["card", "mpesa", "paypal"], required: true },
     status: { type: String, enum: ["pending", "partially paid", "completed"], default: "pending" },
+    flightNumber: { type: String, required: true }, // Store flight number
     transactionHistory: [
         {
             amount: Number,

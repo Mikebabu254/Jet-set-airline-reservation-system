@@ -1,5 +1,5 @@
 const Payment = require("../models/paymentModel");
-const Reservation = require("../models/reservationModel")
+const Reservation = require("../models/reservationModel");
 
 // Initiate Payment (First-time payment setup)
 const initiatePayment = async (req, res) => {
@@ -23,16 +23,10 @@ const initiatePayment = async (req, res) => {
     }
 };
 
-
-
 // Make Payment (Full or Partial)
-// const Reservation = require("../models/reservationModel"); // Import reservation model
-// const Payment = require("../models/paymentModel"); // Import payment model
-
 const makePayment = async (req, res) => {
     try {
         const { receiptNumber, amountPaid, method } = req.body;
-        console.log(method)
 
         if (!receiptNumber || !amountPaid || !method) {
             return res.status(400).json({ error: "Receipt number, amount, and payment method are required" });
@@ -45,18 +39,18 @@ const makePayment = async (req, res) => {
             return res.status(404).json({ error: "Reservation not found" });
         }
 
-        const { email, price } = reservation; // Extract email and price
+        const { email, price, flightNumber } = reservation;
 
-        // Check if a payment record already exists for this user
-        let payment = await Payment.findOne({ email });
+        // Find or create payment record
+        let payment = await Payment.findOne({ email, flightNumber });
 
         if (!payment) {
-            // If no payment exists, create a new one
             payment = new Payment({
                 email,
-                totalAmount: price, // Set total amount as the reservation price
-                balance: price, // Initial balance is the full price
+                totalAmount: price,
+                balance: price,
                 method,
+                flightNumber, // Store the flight number
             });
         }
 
@@ -71,14 +65,20 @@ const makePayment = async (req, res) => {
         // Deduct payment amount
         payment.balance -= amountPaid;
 
-        if (payment.balance === 0) {
-            payment.status = "paid"; // Mark as fully paid
-        }
+        // Add to transaction history
+        payment.transactionHistory.push({
+            amount: amountPaid,
+            method,
+            transactionId: `TXN-${Date.now()}`, // Generate a dummy transaction ID
+        });
 
-        await payment.save(); // Save the updated payment record
+        payment.status = payment.balance === 0 ? "completed" : "partially paid";
+
+        await payment.save();
 
         res.json({
             message: "Payment successful",
+            flightNumber: payment.flightNumber,
             newBalance: payment.balance,
             status: payment.status,
         });
@@ -86,9 +86,6 @@ const makePayment = async (req, res) => {
         res.status(500).json({ error: error.message });
     }
 };
-
-
-
 
 // Get Payment Status
 const getPaymentStatus = async (req, res) => {
@@ -106,4 +103,29 @@ const getPaymentStatus = async (req, res) => {
     }
 };
 
-module.exports = { initiatePayment, makePayment, getPaymentStatus };
+// Get Ticket Details (Includes Flight Number and Balance)
+const getTicketDetails = async (req, res) => {
+    try {
+        const { email } = req.params;
+
+        // Find the latest payment record for the user
+        const payment = await Payment.findOne({ email }).sort({ createdAt: -1 });
+
+        if (!payment) {
+            return res.status(404).json({ error: "No payment record found" });
+        }
+
+        res.json({
+            message: "Ticket details retrieved",
+            flightNumber: payment.flightNumber,
+            totalAmount: payment.totalAmount,
+            amountPaid: payment.totalAmount - payment.balance,
+            balance: payment.balance,
+            status: payment.status,
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+module.exports = { initiatePayment, makePayment, getPaymentStatus, getTicketDetails };

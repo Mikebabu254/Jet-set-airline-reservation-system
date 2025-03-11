@@ -1,4 +1,5 @@
-const bookingFlights = require("../models/reservationModel")
+const bookingFlights = require("../models/reservationModel");
+const Payment = require("../models/paymentModel"); // Import Payment model
 
 const bookFlight = async (req, res) => {
     const { from, to, departureDate, returnDate, price, payed, email } = req.body;
@@ -15,7 +16,7 @@ const bookFlight = async (req, res) => {
             price,
             payed,
             email, // Store the user's email
-            receiptNumber // Store receipt number
+            receiptNumber, // Store receipt number
         });
 
         res.status(201).json(newFlight);
@@ -25,39 +26,58 @@ const bookFlight = async (req, res) => {
     }
 };
 
-
-
+// Get User Bookings with Payment Details
 const getUserBookings = async (req, res) => {
-    const { email } = req.query; // Use req.query to match the frontend request
+    const { email } = req.query;
 
     if (!email) {
         return res.status(400).json({ message: "Email is required" });
     }
 
     try {
+        // Fetch reservations for the user
         const userBookings = await bookingFlights.find({ email });
-        res.status(200).json(userBookings);
+
+        // Fetch payment details for each reservation
+        const enrichedBookings = await Promise.all(
+            userBookings.map(async (booking) => {
+                const payment = await Payment.findOne({ email, flightNumber: booking.flightNumber });
+
+                return {
+                    ...booking.toObject(),
+                    paymentStatus: payment ? payment.status : "Unpaid",
+                    paidAmount: payment ? payment.totalAmount - payment.balance : 0,
+                };
+            })
+        );
+
+        res.status(200).json(enrichedBookings);
     } catch (err) {
-        console.error(err);
+        console.error("Error fetching user bookings:", err);
         res.status(500).json({ message: "Failed to fetch user bookings" });
     }
 };
 
-const viewBookings = async (rqe, res)=>{
-    try{
-        const ViewBooking = await bookingFlights.find()
-        res.json(ViewBooking)
-    }catch(Error){
-        console.log("error fetching bookings")
+// View all Bookings
+const viewBookings = async (req, res) => {
+    try {
+        const viewBooking = await bookingFlights.find();
+        res.json(viewBooking);
+    } catch (error) {
+        console.error("Error fetching bookings:", error);
+        res.status(500).json({ message: "Failed to fetch bookings" });
     }
-}
+};
 
-const countBooking = async(req, res) =>{
-    try{
+// Count Total Bookings
+const countBooking = async (req, res) => {
+    try {
         const noOfBooking = await bookingFlights.countDocuments();
-        res.json({noOfBooking})
-    }catch(Eror){
-        console.log("Error counting number of bookings")
+        res.json({ noOfBooking });
+    } catch (error) {
+        console.error("Error counting number of bookings:", error);
+        res.status(500).json({ message: "Failed to count bookings" });
     }
-}
-module.exports = {bookFlight, getUserBookings, viewBookings, countBooking}
+};
+
+module.exports = { bookFlight, getUserBookings, viewBookings, countBooking };
