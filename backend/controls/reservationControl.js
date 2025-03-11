@@ -41,7 +41,7 @@ const getUserBookings = async (req, res) => {
         // Fetch payment details for each reservation
         const enrichedBookings = await Promise.all(
             userBookings.map(async (booking) => {
-                const payment = await Payment.findOne({ email, flightNumber: booking.flightNumber });
+                const payment = await Payment.findOne({ email, receiptNumber: booking.receiptNumber });
 
                 return {
                     ...booking.toObject(),

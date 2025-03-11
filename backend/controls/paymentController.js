@@ -4,7 +4,8 @@ const Reservation = require("../models/reservationModel");
 // Initiate Payment (First-time payment setup)
 const initiatePayment = async (req, res) => {
     try {
-        const { email, totalAmount, method } = req.body;
+        const { email, totalAmount, method, receiptNumber } = req.body;
+        console.log(receiptNumber)
         if (!email || !totalAmount || !method) {
             return res.status(400).json({ error: "All fields are required" });
         }
@@ -27,7 +28,7 @@ const initiatePayment = async (req, res) => {
 const makePayment = async (req, res) => {
     try {
         const { receiptNumber, amountPaid, method } = req.body;
-
+        console.log(receiptNumber)
         if (!receiptNumber || !amountPaid || !method) {
             return res.status(400).json({ error: "Receipt number, amount, and payment method are required" });
         }
@@ -50,7 +51,7 @@ const makePayment = async (req, res) => {
                 totalAmount: price,
                 balance: price,
                 method,
-                flightNumber, // Store the flight number
+                receiptNumber, // Store the flight number
             });
         }
 
@@ -117,7 +118,7 @@ const getTicketDetails = async (req, res) => {
 
         res.json({
             message: "Ticket details retrieved",
-            flightNumber: payment.flightNumber,
+            receiptNumber: payment.receiptNumber,
             totalAmount: payment.totalAmount,
             amountPaid: payment.totalAmount - payment.balance,
             balance: payment.balance,
