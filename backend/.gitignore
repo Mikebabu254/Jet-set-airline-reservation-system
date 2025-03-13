@@ -1,4 +1,2 @@
-# git ignore files
-
-
+# Ignore environment files
 .env
